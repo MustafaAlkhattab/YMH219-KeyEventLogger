@@ -58,6 +58,7 @@ internal sealed class KeyWindow : Form
         stop.Click += (_, _) => Stop("Kayıt durduruldu.");
         clear.Click += (_, _) => { session.Clear(); grid.Rows.Clear(); RefreshStatus(); hint.Text = "Olay tablosu temizlendi."; };
         save.Click += (_, _) => Save();
+        releases.CheckedChanged += (_, _) => { if (session.Active) pad.Focus(); };
         pad.KeyDown += (_, e) =>
         {
             e.Handled = true;
