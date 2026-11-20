@@ -95,6 +95,7 @@ internal sealed class KeyWindow : Form
             if (session.Active) sample.Focus();
         };
         releases.CheckedChanged += (_, _) => { if (session.Active) sample.Focus(); };
+        sample.TextChanged += (_, _) => RefreshStatus();
         save.Click += (_, _) => Save();
         KeyDown += (_, e) =>
         {
