@@ -2,14 +2,14 @@ namespace KeyEventLogger;
 
 internal static class Ui
 {
-    public static readonly Color Background = ColorTranslator.FromHtml("#222719");
-    public static readonly Color Text = ColorTranslator.FromHtml("#E3EAD5");
-    public static readonly Color Surface = ColorTranslator.FromHtml("#2F3827");
-    public static readonly Color Accent = ColorTranslator.FromHtml("#9AC36B");
-    public static readonly Color OnAccent = ColorTranslator.FromHtml("#182410");
-    public static readonly Color Muted = ColorTranslator.FromHtml("#B6C3A7");
-    public static readonly Color Border = ColorTranslator.FromHtml("#0E160A");
-    public static readonly Color Tint = ColorTranslator.FromHtml("#DCECC4");
+    public static readonly Color Background = ColorTranslator.FromHtml("#141C18");
+    public static readonly Color Text = ColorTranslator.FromHtml("#EDF5E6");
+    public static readonly Color Surface = ColorTranslator.FromHtml("#202C24");
+    public static readonly Color Accent = ColorTranslator.FromHtml("#C6EA83");
+    public static readonly Color OnAccent = ColorTranslator.FromHtml("#1A2813");
+    public static readonly Color Muted = ColorTranslator.FromHtml("#AFC2AE");
+    public static readonly Color Border = ColorTranslator.FromHtml("#364A3B");
+    public static readonly Color Tint = ColorTranslator.FromHtml("#334638");
 
     public static void Window(Form form, string title, int width, int height, int minWidth, int minHeight)
     {
@@ -31,7 +31,7 @@ internal static class Ui
 
     public static Button Button(string value, bool primary = false)
     {
-        var button = new Button
+        var button = new PaletteButton
         {
             Text = value, Height = 36, AutoSize = true, MinimumSize = new(68, 34),
             Padding = new(6, 0, 6, 0), FlatStyle = FlatStyle.Flat, Cursor = Cursors.Hand,
@@ -40,6 +40,19 @@ internal static class Ui
         };
         button.FlatAppearance.BorderColor = primary ? Accent : Border;
         return button;
+    }
+
+    private sealed class PaletteButton : Button
+    {
+        protected override void OnPaint(PaintEventArgs e)
+        {
+            if (Enabled) { base.OnPaint(e); return; }
+            e.Graphics.Clear(Surface);
+            using var border = new Pen(Border);
+            e.Graphics.DrawRectangle(border, 0, 0, Width - 1, Height - 1);
+            TextRenderer.DrawText(e.Graphics, Text, Font, ClientRectangle, Muted,
+                TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
+        }
     }
 
     public static FlowLayoutPanel Bar(params Control[] controls)
