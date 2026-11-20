@@ -26,6 +26,7 @@ internal sealed class KeyWindow : Form
     public KeyWindow()
     {
         Ui.Window(this, "Key Event Studio", 970, 685, 650, 535);
+        KeyPreview = true;
         grid.BackgroundColor = Ui.Surface;
         grid.GridColor = Ui.Border;
         grid.ColumnHeadersDefaultCellStyle = new() { BackColor = Ui.Border, ForeColor = Ui.Text, Font = new("Segoe UI", 10, FontStyle.Bold) };
@@ -54,18 +55,25 @@ internal sealed class KeyWindow : Form
             (Ui.Bar(state, count), 0),
             (pad, 0), (grid, 100), (hint, 0)));
 
-        start.Click += (_, _) => { session.Start(); pad.Focus(); hint.Text = "Bir tuşa basın. Basılı tutmak ikinci bir basma sayılmaz."; RefreshStatus(); };
+        start.Click += (_, _) =>
+        {
+            session.Start();
+            hint.Text = "Bir tuşa basın. Basılı tutmak ikinci bir basma sayılmaz.";
+            RefreshStatus();
+            BeginInvoke(() => { if (session.Active && ContainsFocus) pad.Focus(); });
+        };
         stop.Click += (_, _) => Stop("Kayıt durduruldu.");
         clear.Click += (_, _) => { session.Clear(); grid.Rows.Clear(); RefreshStatus(); hint.Text = "Olay tablosu temizlendi."; };
         save.Click += (_, _) => Save();
         releases.CheckedChanged += (_, _) => { if (session.Active) pad.Focus(); };
-        pad.KeyDown += (_, e) =>
+        KeyDown += (_, e) =>
         {
+            if (!session.Active || e.Alt || e.KeyCode == Keys.Tab) return;
             e.Handled = true;
             Append(session.Press(e.KeyCode, e.Modifiers));
         };
-        pad.KeyUp += (_, e) => Append(session.Release(e.KeyCode, e.Modifiers, releases.Checked));
-        pad.LostFocus += (_, _) => { session.ResetHeld(); RefreshStatus(); };
+        KeyUp += (_, e) => Append(session.Release(e.KeyCode, e.Modifiers, releases.Checked));
+        pad.LostFocus += (_, _) => RefreshStatus();
         pad.GotFocus += (_, _) => RefreshStatus();
         Deactivate += (_, _) =>
         {
@@ -90,7 +98,7 @@ internal sealed class KeyWindow : Form
         start.Enabled = !session.Active;
         stop.Enabled = session.Active;
         save.Enabled = clear.Enabled = grid.Rows.Count > 0;
-        state.Text = session.Active ? (pad.Focused ? "●  Kayıt açık" : "Kayıt hazır · Alanı seçin") : "○  Kayıt kapalı";
+        state.Text = session.Active ? "●  Kayıt açık" : "○  Kayıt kapalı";
         count.Text = $"{session.Presses} basma";
         pad.UpdateState(session.Active, session.LastKey?.ToString() ?? "—");
     }
